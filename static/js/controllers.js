@@ -11,7 +11,8 @@ myApp.controller('myAppCtrl', function ($scope, $http, $location) {
                   "prio": 79000, 
                   "req":{}, 
                   "transient_output" : "[]",
-                  "procStr":"01Jan2012"
+                  "procStr":"01Jan2012",
+                  "prepId" : ""
                 };
   $scope.checkAll = {reco : false, skim : false, mini :false};
   $scope.inTheList;
@@ -73,7 +74,9 @@ myApp.controller('myAppCtrl', function ($scope, $http, $location) {
                   "era":"2012A", 
                   "prio": 79000, 
                   "req":{}, 
-                  "transient_output" : "[]"
+                  "transient_output" : "[]",
+                  "procStr":"02Jan2016",
+                  "prepId":""
                 };
           $scope.drive = {};
           $scope.check = {};
