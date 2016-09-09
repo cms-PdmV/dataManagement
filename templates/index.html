@@ -28,602 +28,572 @@
             <button type="submit" tooltip="Restore the current changes" tooltip-placement="bottom" class="btn btn-primary" ng-if="inTheList" ng-click="loadData()">Load data <i class="fa fa-cloud-upload" aria-hidden="true"></i></button>
             <button type="submit" tooltip="Save the current changes" tooltip-placement="bottom" class="btn btn-primary" ng-if="!doc['submitted'] && inTheList" ng-click="updateDoc()">Save Changes <i class="fa fa-floppy-o" aria-hidden="true"></i></button>
             <button type="submit"  tooltip="Save the current campaign" tooltip-placement="bottom"  class="btn btn-primary" ng-if="!inTheList" ng-click="saveDoc()">Create a new campaign <i class="fa fa-floppy-o" aria-hidden="true"></i> </button>
-
-            <!---SHIT IS REAL FROM HERE -->
-            <div class="container-fluid col-lg-12" id="campTable" ng-switch-default>
-              <table class="table table-striped col-lg-12" style="font-size:16px">
-                <thead>
-                  <tr>
-                    <th>Campaign Name</th>
-                    <th>Actions</th>
-                    <th>CMSSW</th>
-                    <th>Era</th>
-                    <th>Submitted</th>
-                    <th>Tested</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr ng-repeat="name in list.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))">
-                    <td class="campLink"><button ng-click="navigateAllList(name)" class="btn-link btn">{{name}}</button></td>
-                    <td><button class="btn btn-link" tooltip="Edit Campaign" tooltip-placement="up" ng-click="navigateAllList(name)"><i class="fa fa-pencil" aria-hidden="true"></i></button>
-                    <button class="btn btn-link" tooltip="Test Campaign" tooltip-placement="up" ng-click="allViewTest(name)"><i class="fa fa-wrench" aria-hidden="true"></i></button>
-                    <button class="{{((additionalList[$index]['submitted']) ? 'btn btn-link disabled' : 'btn btn-link active')}}"  tooltip="Submit Campaign" tooltip-placement="up" ng-click="allViewSubmit(name)"><i class="fa fa-font-awesome" aria-hidden="true"></i></button>
-                    <button type="button" class="btn btn-link" tooltip="Get Input files for the campaign's datasets" tooltip-placement="up" ng-click="allViewGetFromDas(name)"><i class="fa fa-database" aria-hidden="true"></i></button>
-                    <button type="button" class="btn btn-link" tooltip="Delete Campaign" tooltip-placement="up" ng-click="allViewDelete(name)"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
-                    <td>{{additionalList[$index]['CMSSW']}}</td>
-                    <td>{{additionalList[$index]['era']}}</td>
-                    <td><i class="{{((additionalList[$index]['submitted']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></i></td>
-                    <td><i class="{{((additionalList[$index]['is_tested']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></i></td>
-                  </tr>
-                </tbody>
-              </table>
-              <pagination total-items="totalItems" ng-model="currentPage"  style="float:right"max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="true" num-pages="numPages" items-per-page="itemsPerPage"></pagination>
-
-              <div class="footer">
-                <h4>View
-                  <span dropdown>
-                    <a class="dropdown-toggle" dropdown-toggle>{{itemsPerPage}}</a><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-                    <ol class="dropdown-menu" dropdown-menu>
-                      <li><a ng-click="setItemsPerPage(3)">3</a></li>
-                      <li><a ng-click="setItemsPerPage(5)">5</a></li>
-                      <li><a ng-click="setItemsPerPage(10)">10</a></li>
-                      <li><a ng-click="setItemsPerPage(20)">20</a></li>
-                      <li><a ng-click="setItemsPerPage(50)">50</a></li>
-                    </ol>
-                  records at a time.
-                </h4>
-                <p>Total number of items: {{totalItems}}</p>
-              </div>
-            </div> <!-- end of footer -->
-
-            <div class="row">
-              <div class="col-lg-12 h4">
-              </div>
+            <button type="submit" tooltip="WARNING: You can only submit the campaign once. Any changes will have to be saved to another campaign" tooltip-placement="bottom" class="btn btn-danger" ng-if="!doc['submitted'] && inTheList" ng-click="submitCampaign()">Submit campaign <i class="fa fa-sign-out" aria-hidden="true"></i></button>
+            <i ng-show="working_on" class="fa fa-circle-o-notch fa-spin fa-lg fa-fw ng-hide"></i><span class="sr-only">Loading...</span>
+            <span class="{{((alertMsg['error']) ? 'alert alert-danger' : 'alert alert-success')}}" role="alert" ng-if="alertMsg['show']">
+              <span class="{{((alertMsg['error']) ? 'glyphicon glyphicon-warning-sign' : 'glyphicon glyphicon-ok-sign')}}" aria-hidden="true"></span>
+              {{alertMsg['msg']}}
+            </span>
+          </div>
+        </div>
+        <!---SHIT IS REAL FROM HERE -->
+        <div class="container-fluid col-lg-12" id="campTable" ng-switch-default>
+          <table class="table table-striped col-lg-12" style="font-size:16px">
+            <thead>
+              <tr>
+                <th>Campaign Name</th>
+                <th>Actions</th>
+                <th>CMSSW</th>
+                <th>Era</th>
+                <th>Submitted</th>
+                <th>Tested</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="name in list.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))">
+                <td class="campLink"><button ng-click="navigateAllList(name)" class="btn-link btn">{{name}}</button></td>
+                <td><button class="btn btn-link" tooltip="Edit Campaign" tooltip-placement="up" ng-click="navigateAllList(name)"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                <button class="btn btn-link" tooltip="Test Campaign" tooltip-placement="up" ng-click="allViewTest(name)"><i class="fa fa-wrench" aria-hidden="true"></i></button>
+                <button class="{{((additionalList[$index]['submitted']) ? 'btn btn-link disabled' : 'btn btn-link active')}}"  tooltip="Submit Campaign" tooltip-placement="up" ng-click="allViewSubmit(name)"><i class="fa fa-font-awesome" aria-hidden="true"></i></button>
+                <button type="button" class="btn btn-link" tooltip="Get Input files for the campaign's datasets" tooltip-placement="up" ng-click="allViewGetFromDas(name)"><i class="fa fa-database" aria-hidden="true"></i></button>
+                <button type="button" class="btn btn-link" tooltip="Delete Campaign" tooltip-placement="up" ng-click="allViewDelete(name)"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
+                <td>{{additionalList[$index]['CMSSW']}}</td>
+                <td>{{additionalList[$index]['era']}}</td>
+                <td><i class="{{((additionalList[$index]['submitted']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></i></td>
+                <td><i class="{{((additionalList[$index]['is_tested']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></i></td>
+              </tr>
+            </tbody>
+          </table>
+          <pagination total-items="totalItems" ng-model="currentPage"  style="float:right"max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="true" num-pages="numPages" items-per-page="itemsPerPage"></pagination>
+          <div class="footer">
+            <h4>View
+              <span dropdown>
+                <a class="dropdown-toggle" dropdown-toggle>{{itemsPerPage}}</a><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+                <ol class="dropdown-menu" dropdown-menu>
+                  <li><a ng-click="setItemsPerPage(3)">3</a></li>
+                  <li><a ng-click="setItemsPerPage(5)">5</a></li>
+                  <li><a ng-click="setItemsPerPage(10)">10</a></li>
+                  <li><a ng-click="setItemsPerPage(20)">20</a></li>
+                  <li><a ng-click="setItemsPerPage(50)">50</a></li>
+                </ol>
+              records at a time.
+            </h4>
+            <p>Total number of items: {{totalItems}}</p>
+          </div>
+        </div> <!-- end of footer -->
+        <div class="row">
+          <div class="col-lg-12 h4">
+          </div>
+        </div>
+        <div id="campaignView" class="animate-switch" ng-switch-when="campaign">
+          <ol class="breadcrumb">
+            <li><a ng-click="backButton('campaign')">All Campaigns</a></li>
+            <li class="active">{{data['_id']}}
+              <button class="btn btn-link" tooltip="Test Campaign" tooltip-placement="up" ng-click="allViewTest(data['_id'])"><i class="fa fa-wrench" aria-hidden="true"></i></button>
+              <button class="{{((doc['submitted']) ? 'btn btn-link disabled' : 'btn btn-link active')}}"  tooltip="Submit Campaign" tooltip-placement="up" ng-click="allViewSubmit(data['_id'])"><i class="fa fa-font-awesome" aria-hidden="true"></i></button>
+              <button type="button" class="btn btn-link" tooltip="Get Input files for the campaign's datasets" tooltip-placement="up" ng-click="allViewGetFromDas(data['_id'])"><i class="fa fa-database" aria-hidden="true"></i></button>
+              <button type="button" class="btn btn-link" tooltip="Delete Campaign" tooltip-placement="up" ng-click="allViewDelete(data['_id'])"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
+            </li>
+          </ol>
+          <div class="row">
+            <div class="col-lg-12">
+              <h3 class="title">Main campaign info:</h3>
             </div>
-
-            <div id="campaignView" class="animate-switch" ng-switch-when="campaign">
-              <ol class="breadcrumb">
-                <li><a ng-click="backButton('campaign')">All Campaigns</a></li>
-                <li class="active">{{data['_id']}}
-                  <button class="btn btn-link" tooltip="Test Campaign" tooltip-placement="up" ng-click="allViewTest(data['_id'])"><i class="fa fa-wrench" aria-hidden="true"></i></button>
-                  <button class="{{((doc['submitted']) ? 'btn btn-link disabled' : 'btn btn-link active')}}"  tooltip="Submit Campaign" tooltip-placement="up" ng-click="allViewSubmit(data['_id'])"><i class="fa fa-font-awesome" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-link" tooltip="Get Input files for the campaign's datasets" tooltip-placement="up" ng-click="allViewGetFromDas(data['_id'])"><i class="fa fa-database" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-link" tooltip="Delete Campaign" tooltip-placement="up" ng-click="allViewDelete(data['_id'])"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
-                </li>
-              </ol>
-
+          </div>
+          <div class="row">
+            <div class="col-lg-12 h6"></div>
+          </div>
+          <div class="row">
+             <div class="col-lg-12">
+                <div class="{{((new_dsName.charAt(0)=='/') ? 'form-group has-success' : 'form-group has-error')}}">
+                   <label class="sr-only" for="inputDatasetName">DSName</label>
+                   <div class="input-group">
+                      <div class="input-group-addon">DSName</div>
+                      <input type="text" class="form-control" id="inputDatasetName" placeholder="Dataset name" ng-model="new_dsName">
+                   </div>
+                   <button type="submit" class="btn btn-success"  ng-click="addReq(new_dsName)">
+                      <div class="glyphicon glyphicon-plus" aria-hidden="true"></div> Add
+                   </button>
+                </div>
+                <hr style="border-top: 3px solid #eee">
+             </div>
+          </div> <!-- end of row -->
+          <div class="row">
+            <div class="col-lg-12 h4"></div>
+          </div>
+          <div class="container-fluid col-lg-12" id="dsTable">
+            <table class="table table-striped col-lg-12" style="font-size:16px">
+              <thead>
+                <tr>
+                  <th>Campaign Name</th>
+                  <th>Actions</th>
+                  <th>DAS Input</th>
+                  <th>Test</th>
+                  <th>Reco</th>
+                  <th>Skim</th>
+                  <th>Mini</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(name, info) in data['req']">
+                  <td><buttonclass="campLink" class="btn-link btn" ng-click="navigateDetailedView(name)">
+                    {{name}}</button></td>
+                  <td>
+                  <button class="btn btn-link" tooltip="Edit Dataset" tooltip-placement="up" ng-click="navigateDetailedView(name)"><i class="fa fa-pencil" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="btn btn-link" tooltip="Get Input files for the campaign's datasets" tooltip-placement="up" ng-click="sendToDasSingle(name)"><i class="fa fa-database" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-link" tooltip="Delete Dataset" tooltip-placement="up" ng-click="detailedViewDelete(name)"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
+                  </td>
+                  <td><i class="{{((data['req'][name]['errDas']) ? 'fa fa-times' : 'fa fa-check')}}" aria-hidden="true"></i></td>
+                  <td><i class="{{((data['req'][name]['flag']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></i></td>
+                  <td><i class="{{((check[name]['reco']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></td>
+                  <td><i class="{{((check[name]['skim']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></td>
+                  <td><i class="{{((check[name]['mini']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div> <!-- end of container -->
+          <div class="row">
+            <div class="col-lg-12 h4"></div>
+          </div>
+          <!---TO HERE -->
+          <div class="row">
+            <div class="col-lg-12 h4"></div>
+          </div>
+          <accordion close-others="false">
+            <accordion-group is-open="status.open" ng-init="status.open = true">
+              <accordion-heading>
+                Default Configurations
+                <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+              </accordion-heading>
               <div class="row">
                 <div class="col-lg-12">
-                  <h3 class="title">Main campaign info:</h3>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-12 h6"></div>
-              </div>
-
-              <div class="row">
-                 <div class="col-lg-12">
-                    <div class="{{((new_dsName.charAt(0)=='/') ? 'form-group has-success' : 'form-group has-error')}}">
-                       <label class="sr-only" for="inputDatasetName">DSName</label>
-                       <div class="input-group">
-                          <div class="input-group-addon">DSName</div>
-                          <input type="text" class="form-control" id="inputDatasetName" placeholder="Dataset name" ng-model="new_dsName">
-                       </div>
-                       <button type="submit" class="btn btn-success"  ng-click="addReq(new_dsName)">
-                          <div class="glyphicon glyphicon-plus" aria-hidden="true"></div> Add
-                       </button>
-                    </div>
-                    <hr style="border-top: 3px solid #eee">
-                 </div>
-              </div> <!-- end of row -->
-
-              <div class="row">
-                <div class="col-lg-12 h4"></div>
-              </div>
-
-              <div class="container-fluid col-lg-12" id="dsTable">
-                <table class="table table-striped col-lg-12" style="font-size:16px">
-                  <thead>
-                    <tr>
-                      <th>Campaign Name</th>
-                      <th>Actions</th>
-                      <th>DAS Input</th>
-                      <th>Test</th>
-                      <th>Reco</th>
-                      <th>Skim</th>
-                      <th>Mini</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr ng-repeat="(name, info) in data['req']">
-                      <td><buttonclass="campLink" class="btn-link btn" ng-click="navigateDetailedView(name)">
-                        {{name}}</button></td>
-                      <td>
-                      <button class="btn btn-link" tooltip="Edit Dataset" tooltip-placement="up" ng-click="navigateDetailedView(name)"><i class="fa fa-pencil" aria-hidden="true"></i>
-                      </button>
-                      <button type="button" class="btn btn-link" tooltip="Get Input files for the campaign's datasets" tooltip-placement="up" ng-click="sendToDasSingle(name)"><i class="fa fa-database" aria-hidden="true"></i></button>
-                      <button type="button" class="btn btn-link" tooltip="Delete Dataset" tooltip-placement="up" ng-click="detailedViewDelete(name)"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
-                      </td>
-                      <td><i class="{{((data['req'][name]['errDas']) ? 'fa fa-times' : 'fa fa-check')}}" aria-hidden="true"></i></td>
-                      <td><i class="{{((data['req'][name]['flag']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></i></td>
-                      <td><i class="{{((check[name]['reco']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></td>
-                      <td><i class="{{((check[name]['skim']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></td>
-                      <td><i class="{{((check[name]['mini']) ? 'fa fa-check' : 'fa fa-times')}}" aria-hidden="true"></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div> <!-- end of container -->
-
-              <div class="row">
-                <div class="col-lg-12 h4"></div>
-              </div>
-              <!---TO HERE -->
-              <div class="row">
-                <div class="col-lg-12 h4"></div>
-              </div>
-
-              <accordion close-others="false">
-                <accordion-group is-open="status.open" ng-init="status.open = true">
-                  <accordion-heading>
-                    Default Configurations
-                    <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
-                  </accordion-heading>
-
-                  <div class="row">
-                    <div class="col-lg-12">
-                      <div class="form-group">
-                        <label class="sr-only" for="inputGT">GT</label>
-                        <div class="input-group">
-                          <div class="input-group-addon">GT</div>
-                          <input type="text" class="form-control" id="inputGt" placeholder="GT" ng-model='data["GT"]' />
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="sr-only" for="inputEra">Era</label>
-                        <div class="input-group">
-                          <div class="input-group-addon">Era</div>
-                            <input type="text" class="form-control" id="inputEra" placeholder="Era" ng-model='data["era"]' />
-                          </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="sr-only" for="inputCMSSW">CMSSW</label>
-                        <div class="input-group">
-                          <div class="input-group-addon">CMSSW</div>
-                          <input type="text" class="form-control" id="inputCMSSW" placeholder="CMSSW" ng-model='data["CMSSW"]' />
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="sr-only" for="inputPriority">Priority</label>
-                        <div class="input-group">
-                          <div class="input-group-addon">Priority</div>
-                          <input type="number" class="form-control" id="inputPriority" ng-change="priorityChange(data['prio'])" ng-model="data['prio']" />
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="sr-only" for="inputProcStr">Processing String</label>
-                        <div class="input-group">
-                          <div class="input-group-addon">Processing String</div>
-                          <input type="text" class="form-control" id="inputProcStr" placeholder="Processing String" ng-model="data['procStr']" />
-                        </div>
-                       </div>
-                    </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row h6"></div>
-                  <div class="row">
-                    <div class="col-md-12 h4">
-                      Add/Delete steps:
-                      <div class="btn-group">
-                        <label class="btn {{((checkAll.reco) ? 'btn-danger' : 'btn-success')}}" ng-model="checkAll.reco" ng-change="checkAllChange('reco')" btn-checkbox>{{((checkAll.reco) ? 'Delete Reco' : 'Add Reco')}}</label>
-                        <label class="btn {{((checkAll.skim) ? 'btn-danger' : 'btn-success')}}" ng-model="checkAll.skim" ng-change="checkAllChange('skim')" btn-checkbox>{{((checkAll.skim) ? 'Delete Skim' : 'Add Skim')}}</label>
-                        <label class="btn {{((checkAll.mini) ? 'btn-danger' : 'btn-success')}}" ng-model="checkAll.mini" ng-change="checkAllChange('mini')" btn-checkbox>{{((checkAll.mini) ? 'Delete MiniAOD' : 'Add MiniAOD')}}</label>
-                      </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="inputGT">GT</label>
+                    <div class="input-group">
+                      <div class="input-group-addon">GT</div>
+                      <input type="text" class="form-control" id="inputGt" placeholder="GT" ng-model='data["GT"]' />
                     </div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-lg-12" ng-show="checkAll.reco">
-                      <hr>
-                      <accordion-group is-open="secondStatus.open">
-                        <accordion-heading>
-                          Default RECO configurations:
-                          <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': secondStatus.open, 'glyphicon-chevron-right': !secondStatus.open}"></i>
-                        </accordion-heading>
-                        <hr>
-                        <h4>Default RECO configurations:</h4>
-                        <div class="col-lg-4 form-horizontal">
-                          <div class="form-inline">
-                            <div ng-repeat="(id, txt) in allOpt['Default']['reco']"> <!--recoOpt-->
-                              <div class="form-group" style="margin-top: 5px">
-                                <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
-                                <div class="col-lg-8">
-                                  <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="{{txt}}" ng-model="defCon['reco'][txt]">
-                                    <span class="input-group-btn">
-                                      <button class="btn btn-warning btn-add" type="button" ng-click="defCon['reco'][txt] = null">
-                                        <span class="glyphicon glyphicon-remove"></span>
-                                      </button>
-                                    </span>
-                                  </div>
-                                </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="inputEra">Era</label>
+                    <div class="input-group">
+                      <div class="input-group-addon">Era</div>
+                        <input type="text" class="form-control" id="inputEra" placeholder="Era" ng-model='data["era"]' />
+                      </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="inputCMSSW">CMSSW</label>
+                    <div class="input-group">
+                      <div class="input-group-addon">CMSSW</div>
+                      <input type="text" class="form-control" id="inputCMSSW" placeholder="CMSSW" ng-model='data["CMSSW"]' />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="inputPriority">Priority</label>
+                    <div class="input-group">
+                      <div class="input-group-addon">Priority</div>
+                      <input type="number" class="form-control" id="inputPriority" ng-change="priorityChange(data['prio'])" ng-model="data['prio']" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="inputProcStr">Processing String</label>
+                    <div class="input-group">
+                      <div class="input-group-addon">Processing String</div>
+                      <input type="text" class="form-control" id="inputProcStr" placeholder="Processing String" ng-model="data['procStr']" />
+                    </div>
+                   </div>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row h6"></div>
+              <div class="row">
+                <div class="col-md-12 h4">
+                  Add/Delete steps:
+                  <div class="btn-group">
+                    <label class="btn {{((checkAll.reco) ? 'btn-danger' : 'btn-success')}}" ng-model="checkAll.reco" ng-change="checkAllChange('reco')" btn-checkbox>{{((checkAll.reco) ? 'Delete Reco' : 'Add Reco')}}</label>
+                    <label class="btn {{((checkAll.skim) ? 'btn-danger' : 'btn-success')}}" ng-model="checkAll.skim" ng-change="checkAllChange('skim')" btn-checkbox>{{((checkAll.skim) ? 'Delete Skim' : 'Add Skim')}}</label>
+                    <label class="btn {{((checkAll.mini) ? 'btn-danger' : 'btn-success')}}" ng-model="checkAll.mini" ng-change="checkAllChange('mini')" btn-checkbox>{{((checkAll.mini) ? 'Delete MiniAOD' : 'Add MiniAOD')}}</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12" ng-show="checkAll.reco">
+                  <hr>
+                  <accordion-group is-open="secondStatus.open">
+                    <accordion-heading>
+                      Default RECO configurations:
+                      <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': secondStatus.open, 'glyphicon-chevron-right': !secondStatus.open}"></i>
+                    </accordion-heading>
+                    <hr>
+                    <h4>Default RECO configurations:</h4>
+                    <div class="col-lg-4 form-horizontal">
+                      <div class="form-inline">
+                        <div ng-repeat="(id, txt) in allOpt['Default']['reco']"> <!--recoOpt-->
+                          <div class="form-group" style="margin-top: 5px">
+                            <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
+                            <div class="col-lg-8">
+                              <div class="input-group">
+                                <input type="text" class="form-control" placeholder="{{txt}}" ng-model="defCon['reco'][txt]">
+                                <span class="input-group-btn">
+                                  <button class="btn btn-warning btn-add" type="button" ng-click="defCon['reco'][txt] = null">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                  </button>
+                                </span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div class="col-lg-8">
-                          <div class="form-group">
-                            <label class="sr-only" for="transientInput">Transient output</label>
-                            <div class="input-group">
-                              <div class="input-group-addon">Transient output</div>
-                              <input type="text" class="form-control" id="transientInput" ng-change="transientChange(data['transient_output'])" ng-model="data['transient_output']">
-                            </div>
-                          </div>
-                          <pre style="margin-top: 5px">{{drive['Default']['reco']}}</pre>
-                          <div class="form-group" style="margin-top: 5px">
-                            Add/remove extra fields:
-                            <div class="input-group">
-                              <input type="text" class="form-control" ng-model="tmp_extra['Default']['reco']" placeholder="Type extra" />
-                              <span class="input-group-btn">
-                                <button class="btn btn-success btn-add" type="button" ng-click="addDefExtra('Default', 'reco', tmp_extra['Default']['reco'], '')">
-                                  <span class="glyphicon glyphicon-plus"></span>
-                                </button>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </accordion-group>
+                      </div>
                     </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row">
-                    <div class="col-lg-12" ng-show="checkAll.skim">
-                      <hr>
-                      <accordion-group is-open="thirdStatus.open">
-                        <accordion-heading>
-                          Default Skim configurations:
-                          <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': thirdStatus.open, 'glyphicon-chevron-right': !thirdStatus.open}"></i>
-                        </accordion-heading>
-                        <div class="col-lg-4 form-horizontal">
-                          <div class="form-inline">
-                            <div ng-repeat="(id, txt) in allOpt['Default']['skim']"> <!--recoOpt-->
-                              <div class="form-group" style="margin-top: 5px">
-                                <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
-                                <div class="col-lg-8">
-                                  <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="{{txt}}" ng-model="defCon['skim'][txt]">
-                                    <span class="input-group-btn">
-                                      <button class="btn btn-warning btn-add" type="button" ng-click="defCon['skim'][txt] = null">
-                                        <span class="glyphicon glyphicon-remove"></span>
-                                      </button>
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                    <div class="col-lg-8">
+                      <div class="form-group">
+                        <label class="sr-only" for="transientInput">Transient output</label>
+                        <div class="input-group">
+                          <div class="input-group-addon">Transient output</div>
+                          <input type="text" class="form-control" id="transientInput" ng-change="transientChange(data['transient_output'])" ng-model="data['transient_output']">
                         </div>
-                        <div class="col-lg-8">
-                          <pre style="margin-top: 5px">{{drive['Default']['skim']}}</pre>
-                          <div class="form-group" style="margin-top: 5px">
-                            Add/remove extra fields:
-                            <div class="input-group">
-                              <input type="text" class="form-control" ng-model="tmp_extra['Default']['skim']" placeholder="Type extra" />
-                              <span class="input-group-btn">
-                                <button class="btn btn-success btn-add" type="button" ng-click="addDefExtra('Default', 'skim', tmp_extra['Default']['skim'], '')">
-                                  <span class="glyphicon glyphicon-plus"></span>
-                                </button>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </accordion-group>
-                    </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row">
-                    <div class="col-lg-12" ng-show="checkAll.mini">
-                      <hr>
-                      <accordion-group is-open="fourthStatus.open">
-                        <accordion-heading>
-                          Default MiniAOD configurations:
-                          <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': fourthStatus.open, 'glyphicon-chevron-right': !fourthStatus.open}"></i>
-                        </accordion-heading>
-                        <div class="col-lg-4 form-horizontal">
-                          <div ng-repeat="(id, txt) in allOpt['Default']['mini']">
-                            <div class="form-group" style="margin-top: 5px">
-                              <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
-                              <div class="col-lg-8">
-                                <div class="input-group">
-                                  <input type="text" class="form-control" placeholder="{{txt}}" ng-model="defCon['mini'][txt]">
-                                  <span class="input-group-btn">
-                                    <button class="btn btn-warning btn-add" type="button" ng-click="defCon['mini'][txt] = null">
-                                      <span class="glyphicon glyphicon-remove"></span>
-                                    </button>
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-lg-8">
-                          <pre style="margin-top: 5px">{{drive['Default']['mini']}}</pre>
-                          <div class="form-group" style="margin-top: 5px">
-                            Add/remove extra fields:
-                            <div class=" input-group">
-                              <input type="text" class="form-control" ng-model="tmp_extra['Default']['mini']" placeholder="Type extra" />
-                              <span class="input-group-btn">
-                                <button class="btn btn-success btn-add" type="button" ng-click="addDefExtra(name, 'mini', tmp_extra['Default']['mini'], '')">
-                                  <span class="glyphicon glyphicon-plus"></span>
-                                </button>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </accordion-group>
-                    </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row">
-                    <div class="col-lg-12">
-                      <hr>
-                      <accordion-group is-open="fifthStatus.open">
-                        <accordion-heading>
-                          Default JSON format configurations
-                          <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': fifthStatus.open, 'glyphicon-chevron-right': !fifthStatus.open}"></i>
-                        </accordion-heading>
-                        <div class="col-lg-6">
-                          <h4>Alca configurations:</h4>
-                          <ng-form name="fieldForm">
-                            <button class=" btn btn-success" ng-click="getAlCaMatrixValue()" tooltip="Uploads the AlCa matrix based on the given version. Might not work on some versions and return nothing" tooltip-placement="up">
-                              Get AlCa Matrix
+                      </div>
+                      <pre style="margin-top: 5px">{{drive['Default']['reco']}}</pre>
+                      <div class="form-group" style="margin-top: 5px">
+                        Add/remove extra fields:
+                        <div class="input-group">
+                          <input type="text" class="form-control" ng-model="tmp_extra['Default']['reco']" placeholder="Type extra" />
+                          <span class="input-group-btn">
+                            <button class="btn btn-success btn-add" type="button" ng-click="addDefExtra('Default', 'reco', tmp_extra['Default']['reco'], '')">
+                              <span class="glyphicon glyphicon-plus"></span>
                             </button>
-                            <span class="badge badge-important" style="background-color: red" ng-if="fieldForm.$invalid">Bad JSON formatting</span>
-                            <span class="badge badge-success" style="background-color: green" ng-if="!fieldForm.$invalid">Valid JSON formatting</span>
-                            <inline-editable ng-model="jsons.alca" key="alca"></inline-editable>
-                          </ng-form>
+                          </span>
                         </div>
-                        <div class="col-lg-6">
-                          <h4>Skim configurations:</h4>
-                          <ng-form name="skimFieldForm">
-                            <button class=" btn btn-success" ng-click="getSkimMatrixValue()" tooltip="Uploads the Skim matrix based on the given version. Might not work on some versions and return nothing" tooltip-placement="up">Get Skim Matrix</button>
-                            <span class="badge badge-important" style="background-color: red" ng-if="skimFieldForm.$invalid">Bad JSON formatting</span>
-                            <span class="badge badge-success" style="background-color: green" ng-if="!skimFieldForm.$invalid">Valid JSON formatting</span>
-                            <inline-editable ng-model="jsons.skim" key="skim"></inline-editable>
-                          </ng-form>
-                        </div>
-                        <div class="col-lg-6">
-                          <h4>Luminosity filtering:</h4>
-                          <ng-form name="lumiFieldForm">
-                            <span class="badge badge-important" style="background-color: red" ng-if="lumiFieldForm.$invalid">Bad JSON formatting</span>
-                            <span class="badge badge-success" style="background-color: green" ng-if="!lumiFieldForm.$invalid">Valid JSON formatting</span>
-                            <inline-editable ng-model="jsons.lumi" key="lumi"></inline-editable>
-                          </ng-form>
-                        </div>
-                      </accordion-group>
+                      </div>
                     </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row"><hr></div>
-                  <accordion>
-                    <accordion-group is-open="sixthStatus.open">
-                      <accordion-heading>
-                        Full JSON
-                        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': sixthStatus.open, 'glyphicon-chevron-right': !sixthStatus.open}"></i>
-                      </accordion-heading>
-                      <pre><button class="btn btn-primary" style="float:right" ng-click="copyToClipboard(data)" tooltip="Copy to clipboard" tooltip-placement="up"><i class="fa fa-clipboard" aria-hidden="true"></i></button>{{data | json}}</pre>
-                      <pre><button class="btn btn-primary" style="float:right" ng-click="copyToClipboard(drive)" tooltip="Copy to clipboard" tooltip-placement="up"><i class="fa fa-clipboard" aria-hidden="true"></i></button>{{drive | json}}</pre>
-                    </accordion-group>
-                  </accordion>
+                  </accordion-group>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row">
+                <div class="col-lg-12" ng-show="checkAll.skim">
+                  <hr>
+                  <accordion-group is-open="thirdStatus.open">
+                    <accordion-heading>
+                      Default Skim configurations:
+                      <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': thirdStatus.open, 'glyphicon-chevron-right': !thirdStatus.open}"></i>
+                    </accordion-heading>
+                    <div class="col-lg-4 form-horizontal">
+                      <div class="form-inline">
+                        <div ng-repeat="(id, txt) in allOpt['Default']['skim']"> <!--recoOpt-->
+                          <div class="form-group" style="margin-top: 5px">
+                            <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
+                            <div class="col-lg-8">
+                              <div class="input-group">
+                                <input type="text" class="form-control" placeholder="{{txt}}" ng-model="defCon['skim'][txt]">
+                                <span class="input-group-btn">
+                                  <button class="btn btn-warning btn-add" type="button" ng-click="defCon['skim'][txt] = null">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                  </button>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-8">
+                      <pre style="margin-top: 5px">{{drive['Default']['skim']}}</pre>
+                      <div class="form-group" style="margin-top: 5px">
+                        Add/remove extra fields:
+                        <div class="input-group">
+                          <input type="text" class="form-control" ng-model="tmp_extra['Default']['skim']" placeholder="Type extra" />
+                          <span class="input-group-btn">
+                            <button class="btn btn-success btn-add" type="button" ng-click="addDefExtra('Default', 'skim', tmp_extra['Default']['skim'], '')">
+                              <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </accordion-group>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row">
+                <div class="col-lg-12" ng-show="checkAll.mini">
+                  <hr>
+                  <accordion-group is-open="fourthStatus.open">
+                    <accordion-heading>
+                      Default MiniAOD configurations:
+                      <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': fourthStatus.open, 'glyphicon-chevron-right': !fourthStatus.open}"></i>
+                    </accordion-heading>
+                    <div class="col-lg-4 form-horizontal">
+                      <div ng-repeat="(id, txt) in allOpt['Default']['mini']">
+                        <div class="form-group" style="margin-top: 5px">
+                          <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
+                          <div class="col-lg-8">
+                            <div class="input-group">
+                              <input type="text" class="form-control" placeholder="{{txt}}" ng-model="defCon['mini'][txt]">
+                              <span class="input-group-btn">
+                                <button class="btn btn-warning btn-add" type="button" ng-click="defCon['mini'][txt] = null">
+                                  <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-8">
+                      <pre style="margin-top: 5px">{{drive['Default']['mini']}}</pre>
+                      <div class="form-group" style="margin-top: 5px">
+                        Add/remove extra fields:
+                        <div class=" input-group">
+                          <input type="text" class="form-control" ng-model="tmp_extra['Default']['mini']" placeholder="Type extra" />
+                          <span class="input-group-btn">
+                            <button class="btn btn-success btn-add" type="button" ng-click="addDefExtra(name, 'mini', tmp_extra['Default']['mini'], '')">
+                              <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </accordion-group>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row">
+                <div class="col-lg-12">
+                  <hr>
+                  <accordion-group is-open="fifthStatus.open">
+                    <accordion-heading>
+                      Default JSON format configurations
+                      <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': fifthStatus.open, 'glyphicon-chevron-right': !fifthStatus.open}"></i>
+                    </accordion-heading>
+                    <div class="col-lg-6">
+                      <h4>Alca configurations:</h4>
+                      <ng-form name="fieldForm">
+                        <button class=" btn btn-success" ng-click="getAlCaMatrixValue()" tooltip="Uploads the AlCa matrix based on the given version. Might not work on some versions and return nothing" tooltip-placement="up">
+                          Get AlCa Matrix
+                        </button>
+                        <span class="badge badge-important" style="background-color: red" ng-if="fieldForm.$invalid">Bad JSON formatting</span>
+                        <span class="badge badge-success" style="background-color: green" ng-if="!fieldForm.$invalid">Valid JSON formatting</span>
+                        <inline-editable ng-model="jsons.alca" key="alca"></inline-editable>
+                      </ng-form>
+                    </div>
+                    <div class="col-lg-6">
+                      <h4>Skim configurations:</h4>
+                      <ng-form name="skimFieldForm">
+                        <button class=" btn btn-success" ng-click="getSkimMatrixValue()" tooltip="Uploads the Skim matrix based on the given version. Might not work on some versions and return nothing" tooltip-placement="up">Get Skim Matrix</button>
+                        <span class="badge badge-important" style="background-color: red" ng-if="skimFieldForm.$invalid">Bad JSON formatting</span>
+                        <span class="badge badge-success" style="background-color: green" ng-if="!skimFieldForm.$invalid">Valid JSON formatting</span>
+                        <inline-editable ng-model="jsons.skim" key="skim"></inline-editable>
+                      </ng-form>
+                    </div>
+                    <div class="col-lg-6">
+                      <h4>Luminosity filtering:</h4>
+                      <ng-form name="lumiFieldForm">
+                        <span class="badge badge-important" style="background-color: red" ng-if="lumiFieldForm.$invalid">Bad JSON formatting</span>
+                        <span class="badge badge-success" style="background-color: green" ng-if="!lumiFieldForm.$invalid">Valid JSON formatting</span>
+                        <inline-editable ng-model="jsons.lumi" key="lumi"></inline-editable>
+                      </ng-form>
+                    </div>
+                  </accordion-group>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row"><hr></div>
+              <accordion>
+                <accordion-group is-open="sixthStatus.open">
+                  <accordion-heading>
+                    Full JSON
+                    <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': sixthStatus.open, 'glyphicon-chevron-right': !sixthStatus.open}"></i>
+                  </accordion-heading>
+                  <pre><button class="btn btn-primary" style="float:right" ng-click="copyToClipboard(data)" tooltip="Copy to clipboard" tooltip-placement="up"><i class="fa fa-clipboard" aria-hidden="true"></i></button>{{data | json}}</pre>
+                  <pre><button class="btn btn-primary" style="float:right" ng-click="copyToClipboard(drive)" tooltip="Copy to clipboard" tooltip-placement="up"><i class="fa fa-clipboard" aria-hidden="true"></i></button>{{drive | json}}</pre>
                 </accordion-group>
               </accordion>
-            </div> <!-- end of campaignView -->
-
-            <div id="detailedView" class="animate-switch" ng-switch-when="detailed">
-              <ol class="breadcrumb">
-                <li><a ng-click="backButton('campaign')">All Campaigns</a></li>
-                <li><a ng-click="backButton('detailed')">{{data['_id']}}</a></li>
-                <li class="dropdown">
-                  <span dropdown>
-                    <a class="dropdown-toggle" style="color:white" dropdown-toggle>{{currentDs}}</a>
-                    <span class="glyphicon glyphicon-chevron-down" aria-hidden="true" ng-show="dsCount != 1"></span>
-                    <ul class="dropdown-menu" dropdown-menu ng-show="dsCount != 1">
-                      <li ng-repeat="(name2, info2) in data['req']" ng-show="(name2!=currentDs)"><a ng-click="navigateDetailedView(name2)"><h4>{{name2}}</h4></a></li>
-                    </ul>
-                </li>
-              </ol>
-              <div ng-repeat="(name, info) in data['req']" ng-show="name==currentDs">
-
-                <div class="row">
-                  <div class="col-md-12 h4">
-                    Add/Delete steps:
-                    <div class="btn-group">
-                      <label class="btn {{((check[name].reco) ? 'btn-danger' : 'btn-success')}}" ng-model="check[name].reco" ng-change="checkChange(name, 'reco')" btn-checkbox>{{((check[name].reco) ? 'Delete Reco' : 'Add Reco')}}</label>
-                      <label class="btn {{((check[name].skim) ? 'btn-danger' : 'btn-success')}}" ng-model="check[name].skim" ng-change="checkChange(name, 'skim')" btn-checkbox>{{((check[name].skim) ? 'Delete Skim' : 'Add Skim')}}</label>
-                      <label class="btn {{((check[name].mini) ? 'btn-danger' : 'btn-success')}}" ng-model="check[name].mini" ng-change="checkChange(name, 'mini')" btn-checkbox>{{((check[name].mini) ? 'Delete MiniAOD' : 'Add MiniAOD')}}</label>
-                    </div>
-                    <div class="form-group">
-                      <label class="sr-only" for="inputPrio{{name}}">Priority</label>
-                      <div class="input-group">
-                        <div class="input-group-addon">Priority</div>
-                        <input type="number" class="form-control" id="inputPrio{{name}}" placeholder="{{data['prio']}}" ng-model="data['req'][name]['prio']">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <ng-form name="fieldForm">
-                  <div class="row">
-                    <div class="col-lg-12" ng-show="check[name].reco">
-                      <hr>
-                      <h3>RECO configurations:</h3>
-
-                      <div class="col-lg-4 form-horizontal">
-                        <div class="form-inline">
-                          <div ng-repeat="(id, txt) in allOpt[name]['reco']"> <!--recoOpt-->
-                            <div class="form-group" style="margin-top: 5px">
-                              <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
-                              <div class="col-lg-8">
-                                <div class="input-group">
-                                  <input type="text" class="form-control" placeholder="{{txt}}" ng-model="data['req'][name]['action']['reco'][txt]" />
-                                  <span class="input-group-btn">
-                                    <button class="btn btn-warning btn-add" type="button" ng-click="data['req'][name]['action']['reco'][txt]=null">
-                                      <span class="glyphicon glyphicon-remove"></span>
-                                    </button>
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="col-lg-8">
-                        <div class="form-group">
-                          <label class="sr-only" for="transientInput{{name}}">Transient output</label>
-                          <div class="input-group">
-                            <div class="input-group-addon">Transient output</div>
-                            <input type="text" class="form-control" id="transientInput{{name}}" ng-model="data['req'][name]['transient_output']">
-                          </div>
-                        </div>
-                        <pre style="margin-top: 5px">{{drive[name]['reco']}}</pre>
-                        <div class="form-group" style="margin-top: 5px">
-                          Add/remove extra fields:
-                          <div class="input-group">
-                            <input type="text" class="form-control" ng-model="tmp_extra[name]['reco']" placeholder="Type extra" />
-                            <span class="input-group-btn">
-                              <button class="btn btn-success btn-add" type="button" ng-click="addExtra(name, 'reco', tmp_extra[name]['reco'], '')">
-                                <span class="glyphicon glyphicon-plus"></span>
-                              </button>
-                            </span>
-                          </div>
-                        </div>
-                        <div class="form-group" style="margin-top: 5px">
-                          <button class="btn btn-success" tooltip="Adds ALCA:autoAlca[dataset] dependant on the JSON AlCa config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getAlCaDatasetValue(name, 'reco')">Add AlCa Matrix step</button>
-                          <button class="btn btn-success" tooltip="Adds SKIM:autoSkim[dataset] dependant on the JSON Skim config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getSkimDatasetValue(name, 'reco')">Add Skim Matrix step</button>
-                          <label class="btn {{((check[name].recoUnscheduled) ? 'btn-danger' : 'btn-success')}}" tooltip="Adds/Removes --runUnscheduled parameter in the driver" tooltip-placement="up" ng-model="check[name].recoUnscheduled" ng-change="addRunUnscheduled(name, 'reco')" btn-checkbox>{{((check[name].recoUnscheduled) ? 'Delete runUnscheduled' : 'Add runUnscheduled')}}</label>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row">
-                    <div class="col-lg-12" ng-show="check[name].skim">
-                      <hr>
-                      <h3>Skim configurations:</h3>
-
-                      <div class="col-lg-4 form-horizontal">
-                        <div ng-repeat="(id, txt) in allOpt[name]['skim']">
-                          <div class="form-group" style="margin-top: 5px">
-                            <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
-                            <div class="col-lg-8">
-                              <div class="input-group">
-                                <input type="text" class="form-control" placeholder="{{txt}}" ng-model="data['req'][name]['action']['skim'][txt]">
-                                <span class="input-group-btn">
-                                  <button class="btn btn-warning btn-add" type="button" ng-click="data['req'][name]['action']['skim'][txt] = null">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                  </button>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="col-lg-8">
-                        <pre style="margin-top: 5px">{{drive[name]['skim']}}</pre>
-                        <div class="form-group" style="margin-top: 5px">
-                          Add/remove extra fields:
-                          <div class=" input-group">
-                            <input type="text" class="form-control" ng-model="tmp_extra[name]['skim']" placeholder="Type extra" />
-                            <span class="input-group-btn">
-                              <button class="btn btn-success btn-add" type="button" ng-click="addExtra(name, 'skim', tmp_extra[name]['skim'], '')">
-                                <span class="glyphicon glyphicon-plus"></span>
-                              </button>
-                            </span>
-                          </div>
-                        </div>
-                        <div class="form-group" style="margin-top: 5px">
-                          <button class="btn btn-success" tooltip="Adds ALCA:autoAlca[dataset] dependant on the JSON AlCa config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getAlCaDatasetValue(name, 'skim')">Add AlCa Matrix step</button>
-                          <button class="btn btn-success" tooltip="Adds SKIM:autoSkim[dataset] dependant on the JSON Skim config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getSkimDatasetValue(name, 'skim')">Add Skim Matrix step</button>
-                          <label class="btn {{((check[name].skimUnscheduled) ? 'btn-danger' : 'btn-success')}}" tooltip="Adds/Removes --runUnscheduled parameter in the driver" tooltip-placement="up" ng-model="check[name].skimUnscheduled" ng-change="addRunUnscheduled(name, 'skim')" btn-checkbox>{{((check[name].skimUnscheduled) ? 'Delete runUnscheduled' : 'Add runUnscheduled')}}</label>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div> <!-- end of row -->
-
-                  <div class="row">
-                    <div class="col-lg-12" ng-show="check[name].mini">
-                      <hr>
-                      <h3>MiniAOD configurations:</h3>
-
-                      <div class="col-lg-4 form-horizontal">
-                        <div ng-repeat="(id, txt) in allOpt[name]['mini']">
-                          <div class="form-group" style="margin-top: 5px">
-                            <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
-                            <div class="col-lg-8">
-                              <div class="input-group">
-                                <input type="text" class="form-control" placeholder="{{txt}}" ng-model="data['req'][name]['action']['mini'][txt]" />
-                                <span class="input-group-btn">
-                                  <button class="btn btn-warning btn-add" type="button" ng-click="data['req'][name]['action']['mini'][txt] = null">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                  </button>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="col-lg-8">
-                        <pre style="margin-top: 5px">{{drive[name]['mini']}}</pre>
-                        <div class="form-group" style="margin-top: 5px">
-                          Add/remove extra fields:
-                          <div class=" input-group">
-                            <input type="text" class="form-control" ng-model="tmp_extra[name]['mini']" placeholder="Type extra" />
-                            <span class="input-group-btn">
-                              <button class="btn btn-success btn-add" type="button" ng-click="addExtra(name, 'mini', tmp_extra[name]['mini'], '')">
-                                <span class="glyphicon glyphicon-plus"></span>
-                              </button>
-                            </span>
-                          </div>
-                        </div>
-                        <div class="form-group" style="margin-top: 5px">
-                          <button class="btn btn-success" tooltip="Adds ALCA:autoAlca[dataset] dependant on the JSON AlCa config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getAlCaDatasetValue(name, 'mini')">Add AlCa Matrix step</button>
-                          <button class="btn btn-success" tooltip="Adds SKIM:autoSkim[dataset] dependant on the JSON Skim config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getSkimDatasetValue(name, 'mini')">Add Skim Matrix step</button>
-                          <label class="btn {{((check[name].miniUnscheduled) ? 'btn-danger' : 'btn-success')}}" tooltip="Adds/Removes --runUnscheduled parameter in the driver" tooltip-placement="up" ng-model="check[name].miniUnscheduled" ng-change="addRunUnscheduled(name, 'mini')" btn-checkbox>{{((check[name].miniUnscheduled) ? 'Delete runUnscheduled' : 'Add runUnscheduled')}}</label>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div> <!-- end of row -->
-                </ng-form>
-
-                <hr></hr>
-
-                <ul class="nav nav-tabs btn-group" ng-show="doc['is_tested']">
-                  <li ng-click="item=1"><a class="btn btn-primary" data-toggle="tab">StdErr</a>  </li>
-                  <li ng-click="item=2"> <a class="btn btn-primary" data-toggle="tab">StdOut</a></li>
+            </accordion-group>
+          </accordion>
+        </div> <!-- end of campaignView -->
+        <div id="detailedView" class="animate-switch" ng-switch-when="detailed">
+          <ol class="breadcrumb">
+            <li><a ng-click="backButton('campaign')">All Campaigns</a></li>
+            <li><a ng-click="backButton('detailed')">{{data['_id']}}</a></li>
+            <li class="dropdown">
+              <span dropdown>
+                <a class="dropdown-toggle" style="color:white" dropdown-toggle>{{currentDs}}</a>
+                <span class="glyphicon glyphicon-chevron-down" aria-hidden="true" ng-show="dsCount != 1"></span>
+                <ul class="dropdown-menu" dropdown-menu ng-show="dsCount != 1">
+                  <li ng-repeat="(name2, info2) in data['req']" ng-show="(name2!=currentDs)"><a ng-click="navigateDetailedView(name2)"><h4>{{name2}}</h4></a></li>
                 </ul>
-
-                <div class="tab-content" ng-init='item=1' ng-show="doc['is_tested']">
-                  <h3>Test Output for {{name}}</h3>
-                  <div ng-show='item == 1'>
-                    <h3>StdErr</h3>
-                    <pre id="testOutput" style="margin-top: 5px">{{info['stderr']}}</pre>
-                  </div>
-                  <div ng-show='item == 2'>
-                    <h3>StdOut</h3>
-                    <pre id="testOutput" style="margin-top: 5px">{{info['stdout']}}</pre>
+            </li>
+          </ol>
+          <div ng-repeat="(name, info) in data['req']" ng-show="name==currentDs">
+            <div class="row">
+              <div class="col-md-12 h4">
+                Add/Delete steps:
+                <div class="btn-group">
+                  <label class="btn {{((check[name].reco) ? 'btn-danger' : 'btn-success')}}" ng-model="check[name].reco" ng-change="checkChange(name, 'reco')" btn-checkbox>{{((check[name].reco) ? 'Delete Reco' : 'Add Reco')}}</label>
+                  <label class="btn {{((check[name].skim) ? 'btn-danger' : 'btn-success')}}" ng-model="check[name].skim" ng-change="checkChange(name, 'skim')" btn-checkbox>{{((check[name].skim) ? 'Delete Skim' : 'Add Skim')}}</label>
+                  <label class="btn {{((check[name].mini) ? 'btn-danger' : 'btn-success')}}" ng-model="check[name].mini" ng-change="checkChange(name, 'mini')" btn-checkbox>{{((check[name].mini) ? 'Delete MiniAOD' : 'Add MiniAOD')}}</label>
+                </div>
+                <div class="form-group">
+                  <label class="sr-only" for="inputPrio{{name}}">Priority</label>
+                  <div class="input-group">
+                    <div class="input-group-addon">Priority</div>
+                    <input type="number" class="form-control" id="inputPrio{{name}}" placeholder="{{data['prio']}}" ng-model="data['req'][name]['prio']">
                   </div>
                 </div>
-
-              </div> <!-- end of ng-repeat -->
-            </div> <!-- end of detailedView -->
-          </div>
-        </div> <!-- end of form row -->
+              </div>
+            </div>
+            <ng-form name="fieldForm">
+              <div class="row">
+                <div class="col-lg-12" ng-show="check[name].reco">
+                  <hr>
+                  <h3>RECO configurations:</h3>
+                  <div class="col-lg-4 form-horizontal">
+                    <div class="form-inline">
+                      <div ng-repeat="(id, txt) in allOpt[name]['reco']"> <!--recoOpt-->
+                        <div class="form-group" style="margin-top: 5px">
+                          <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
+                          <div class="col-lg-8">
+                            <div class="input-group">
+                              <input type="text" class="form-control" placeholder="{{txt}}" ng-model="data['req'][name]['action']['reco'][txt]" />
+                              <span class="input-group-btn">
+                                <button class="btn btn-warning btn-add" type="button" ng-click="data['req'][name]['action']['reco'][txt]=null">
+                                  <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-8">
+                    <div class="form-group">
+                      <label class="sr-only" for="transientInput{{name}}">Transient output</label>
+                      <div class="input-group">
+                        <div class="input-group-addon">Transient output</div>
+                        <input type="text" class="form-control" id="transientInput{{name}}" ng-model="data['req'][name]['transient_output']">
+                      </div>
+                    </div>
+                    <pre style="margin-top: 5px">{{drive[name]['reco']}}</pre>
+                    <div class="form-group" style="margin-top: 5px">
+                      Add/remove extra fields:
+                      <div class="input-group">
+                        <input type="text" class="form-control" ng-model="tmp_extra[name]['reco']" placeholder="Type extra" />
+                        <span class="input-group-btn">
+                          <button class="btn btn-success btn-add" type="button" ng-click="addExtra(name, 'reco', tmp_extra[name]['reco'], '')">
+                            <span class="glyphicon glyphicon-plus"></span>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 5px">
+                      <button class="btn btn-success" tooltip="Adds ALCA:autoAlca[dataset] dependant on the JSON AlCa config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getAlCaDatasetValue(name, 'reco')">Add AlCa Matrix step</button>
+                      <button class="btn btn-success" tooltip="Adds SKIM:autoSkim[dataset] dependant on the JSON Skim config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getSkimDatasetValue(name, 'reco')">Add Skim Matrix step</button>
+                      <label class="btn {{((check[name].recoUnscheduled) ? 'btn-danger' : 'btn-success')}}" tooltip="Adds/Removes --runUnscheduled parameter in the driver" tooltip-placement="up" ng-model="check[name].recoUnscheduled" ng-change="addRunUnscheduled(name, 'reco')" btn-checkbox>{{((check[name].recoUnscheduled) ? 'Delete runUnscheduled' : 'Add runUnscheduled')}}</label>
+                    </div>
+                  </div>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row">
+                <div class="col-lg-12" ng-show="check[name].skim">
+                  <hr>
+                  <h3>Skim configurations:</h3>
+                  <div class="col-lg-4 form-horizontal">
+                    <div ng-repeat="(id, txt) in allOpt[name]['skim']">
+                      <div class="form-group" style="margin-top: 5px">
+                        <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
+                        <div class="col-lg-8">
+                          <div class="input-group">
+                            <input type="text" class="form-control" placeholder="{{txt}}" ng-model="data['req'][name]['action']['skim'][txt]">
+                            <span class="input-group-btn">
+                              <button class="btn btn-warning btn-add" type="button" ng-click="data['req'][name]['action']['skim'][txt] = null">
+                                <span class="glyphicon glyphicon-remove"></span>
+                              </button>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-8">
+                    <pre style="margin-top: 5px">{{drive[name]['skim']}}</pre>
+                    <div class="form-group" style="margin-top: 5px">
+                      Add/remove extra fields:
+                      <div class=" input-group">
+                        <input type="text" class="form-control" ng-model="tmp_extra[name]['skim']" placeholder="Type extra" />
+                        <span class="input-group-btn">
+                          <button class="btn btn-success btn-add" type="button" ng-click="addExtra(name, 'skim', tmp_extra[name]['skim'], '')">
+                            <span class="glyphicon glyphicon-plus"></span>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 5px">
+                      <button class="btn btn-success" tooltip="Adds ALCA:autoAlca[dataset] dependant on the JSON AlCa config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getAlCaDatasetValue(name, 'skim')">Add AlCa Matrix step</button>
+                      <button class="btn btn-success" tooltip="Adds SKIM:autoSkim[dataset] dependant on the JSON Skim config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getSkimDatasetValue(name, 'skim')">Add Skim Matrix step</button>
+                      <label class="btn {{((check[name].skimUnscheduled) ? 'btn-danger' : 'btn-success')}}" tooltip="Adds/Removes --runUnscheduled parameter in the driver" tooltip-placement="up" ng-model="check[name].skimUnscheduled" ng-change="addRunUnscheduled(name, 'skim')" btn-checkbox>{{((check[name].skimUnscheduled) ? 'Delete runUnscheduled' : 'Add runUnscheduled')}}</label>
+                    </div>
+                  </div>
+                </div>
+              </div> <!-- end of row -->
+              <div class="row">
+                <div class="col-lg-12" ng-show="check[name].mini">
+                  <hr>
+                  <h3>MiniAOD configurations:</h3>
+                  <div class="col-lg-4 form-horizontal">
+                    <div ng-repeat="(id, txt) in allOpt[name]['mini']">
+                      <div class="form-group" style="margin-top: 5px">
+                        <div class="col-lg-4" style="width: 100px">{{txt}}:</div>
+                        <div class="col-lg-8">
+                          <div class="input-group">
+                            <input type="text" class="form-control" placeholder="{{txt}}" ng-model="data['req'][name]['action']['mini'][txt]" />
+                            <span class="input-group-btn">
+                              <button class="btn btn-warning btn-add" type="button" ng-click="data['req'][name]['action']['mini'][txt] = null">
+                                <span class="glyphicon glyphicon-remove"></span>
+                              </button>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-8">
+                    <pre style="margin-top: 5px">{{drive[name]['mini']}}</pre>
+                    <div class="form-group" style="margin-top: 5px">
+                      Add/remove extra fields:
+                      <div class=" input-group">
+                        <input type="text" class="form-control" ng-model="tmp_extra[name]['mini']" placeholder="Type extra" />
+                        <span class="input-group-btn">
+                          <button class="btn btn-success btn-add" type="button" ng-click="addExtra(name, 'mini', tmp_extra[name]['mini'], '')">
+                            <span class="glyphicon glyphicon-plus"></span>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 5px">
+                      <button class="btn btn-success" tooltip="Adds ALCA:autoAlca[dataset] dependant on the JSON AlCa config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getAlCaDatasetValue(name, 'mini')">Add AlCa Matrix step</button>
+                      <button class="btn btn-success" tooltip="Adds SKIM:autoSkim[dataset] dependant on the JSON Skim config. NOTE: make sure there is data in the default JSON config" tooltip-placement="up" ng-click="getSkimDatasetValue(name, 'mini')">Add Skim Matrix step</button>
+                      <label class="btn {{((check[name].miniUnscheduled) ? 'btn-danger' : 'btn-success')}}" tooltip="Adds/Removes --runUnscheduled parameter in the driver" tooltip-placement="up" ng-model="check[name].miniUnscheduled" ng-change="addRunUnscheduled(name, 'mini')" btn-checkbox>{{((check[name].miniUnscheduled) ? 'Delete runUnscheduled' : 'Add runUnscheduled')}}</label>
+                    </div>
+                  </div>
+                </div>
+              </div> <!-- end of row -->
+            </ng-form>
+            <hr></hr>
+            <ul class="nav nav-tabs btn-group" ng-show="doc['is_tested']">
+              <li ng-click="item=1"><a class="btn btn-primary" data-toggle="tab">StdErr</a>  </li>
+              <li ng-click="item=2"> <a class="btn btn-primary" data-toggle="tab">StdOut</a></li>
+            </ul>
+            <div class="tab-content" ng-init='item=1' ng-show="doc['is_tested']">
+              <h3>Test Output for {{name}}</h3>
+              <div ng-show='item == 1'>
+                <h3>StdErr</h3>
+                <pre id="testOutput" style="margin-top: 5px">{{info['stderr']}}</pre>
+              </div>
+              <div ng-show='item == 2'>
+                <h3>StdOut</h3>
+                <pre id="testOutput" style="margin-top: 5px">{{info['stdout']}}</pre>
+              </div>
+            </div>
+          </div> <!-- end of ng-repeat -->
+        </div> <!-- end of detailedView -->
       </form>
     </div> <!-- end of top container -->
   </body>
