@@ -2,9 +2,9 @@
 administrators = ["pdmvserv", "anorkus", "jsiderav"]
 
 [strings]
-work_dir = /afs/cern.ch/user/j/jsiderav/public/dataManagement/stuff
-priv_cred = /afs/cern.ch/user/j/jsiderav/private/PdmVService.txt
-user_proxy = /tmp/x509up_u94773
+work_dir = /home/datamanagement/dataManagement/stuff
+priv_cred = /afs/cern.ch/user/p/pdmvserv/private/PdmVService.txt
+user_proxy = /afs/cern.ch/user/p/pdmvserv/private/personal/voms_proxy.cert
 rel_xml = https://cmssdt.cern.ch/SDT/cgi-bin/ReleasesXML/?anytype=1
 git_cmssw = https://raw.githubusercontent.com/cms-sw/cmssw/
 git_step_make = https://raw.githubusercontent.com/jonuuukas/dataManagement/master/step_make.py

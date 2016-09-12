@@ -20,7 +20,8 @@ app = Flask(__name__)
 WORK_DIR = CONFIG.WORK_DIR
 WORKDIR = ''
 couch = CouchDBInterface()
-cred = CONFIG.PRIV_CRED
+##TO-DO not needed on pdmvserv
+# cred = CONFIG.PRIV_CRED
 
 ###
 ###Replaced with below
@@ -201,7 +202,6 @@ def get_test_bash(__release, _id, __scram):
     comm += "wget %s\n" %CONFIG.GIT_COUCHDB
     # comm += "eval `scram runtime -sh`\n"
     comm += "eval `scram runtime -sh` && python step_make.py --in=%s\n" % (_id)
-    comm += "cat %s | voms-proxy-init -voms cms -pwstdin\n" %(cred)
     return comm
 
 def get_submit_bash(__release, _id, __scram):
@@ -236,7 +236,6 @@ def get_submit_bash(__release, _id, __scram):
     #-------------For wmcontrol.py---------------------
     comm += "source %s\n" %CONFIG.WMCLIENT
     comm += "export PATH=/afs/cern.ch/cms/PPD/PdmV/tools/wmcontrol_testful:${PATH}\n"
-    comm += "cat %s | voms-proxy-init -voms cms -pwstdin\n" %(cred)
     comm += "echo 'executing scram runtime'\n"
     comm += "eval `scram runtime -sh`\n"
     comm += "echo 'executing export'\n"
@@ -257,7 +256,7 @@ def das_driver_all():
         Local scope method which loops through the result of das_client queries,
         exits on first found result, doesn't bother too much
         """
-        proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 0 --query 'site dataset="+key+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log_file,stderr=err_file,shell=True)
+        proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 0 --query 'site dataset="+key+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log_file,stderr=err_file,shell=True)
         log_file.seek(0)
         err_file.seek(0)
         text = log_file.read()
@@ -265,7 +264,7 @@ def das_driver_all():
         for item in data['data']:
             for site in item['site']:
                 if 'dataset_fraction' in site and site['kind'] == "Disk":
-                    proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 10 --query 'file dataset="+key+" site="+site['name']+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log2_file, stderr=err2_file, shell=True)
+                    proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 10 --query 'file dataset="+key+" site="+site['name']+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log2_file, stderr=err2_file, shell=True)
                     log2_file.seek(0)
                     err2_file.seek(0)
                     text2 = log2_file.read()
@@ -313,7 +312,7 @@ def das_driver_single():
     err_file = file('dasTest_errSingle.txt','w+')
     log2_file = file('dasTest_2outSingle.txt','w+')
     err2_file = file('dasTest_2errSingle.txt','w+')
-    proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat " + cred + " | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY=" + CONFIG.USER_PROXY + "; das_client.py  --limit 0 --query 'site dataset=" + dsName + "' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json", stdout=log_file, stderr=err_file, shell=True)
+    proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`;export X509_USER_PROXY=" + CONFIG.USER_PROXY + "; das_client.py  --limit 0 --query 'site dataset=" + dsName + "' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json", stdout=log_file, stderr=err_file, shell=True)
     log_file.seek(0)
     err_file.seek(0)
     text = log_file.read()
@@ -321,7 +320,7 @@ def das_driver_single():
     for item in data['data']:
         for site in item['site']:
             if 'dataset_fraction' in site and site['kind'] == "Disk":
-                proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat " + cred + " | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY=" + CONFIG.USER_PROXY + "; das_client.py  --limit 10 --query 'file dataset=" + dsName + " site=" + site['name'] + "' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json", stdout=log2_file, stderr=err2_file, shell=True)
+                proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`;export X509_USER_PROXY=" + CONFIG.USER_PROXY + "; das_client.py  --limit 10 --query 'file dataset=" + dsName + " site=" + site['name'] + "' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json", stdout=log2_file, stderr=err2_file, shell=True)
                 log2_file.seek(0)
                 err2_file.seek(0)
                 text2 = log2_file.read()
