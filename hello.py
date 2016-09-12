@@ -5,7 +5,7 @@ import pwd
 import os.path
 import urllib2
 import subprocess
-import sys  
+import sys
 import datetime
 import xml.dom.minidom
 import imp
@@ -33,6 +33,7 @@ def hello():
     Opening function that directs to index.html
     """
     return send_from_directory('templates', 'index.html')
+
 @app.route('/api/help', methods = ['GET'])
 def help():
     """Print available functions."""
@@ -41,6 +42,7 @@ def help():
         if rule.endpoint != 'static':
             func_list[rule.rule] = app.view_functions[rule.endpoint].__doc__
     return jsonify(func_list)
+
 def get_scram(__release):
     """
     By the given __release version checks with the scram architecture versions'
@@ -48,14 +50,14 @@ def get_scram(__release):
     """
     scram = ''
     xml_data = xml.dom.minidom.parseString(os.popen("curl -s --insecure '%s'" % CONFIG.REL_XML).read())
-    
+
     for arch in xml_data.documentElement.getElementsByTagName("architecture"):
         scram_arch = arch.getAttribute('name')
         for project in arch.getElementsByTagName("project"):
             release = str(project.getAttribute('label'))
             if release == __release:
                 scram = scram_arch
-    
+
     return scram
 
 @app.route('/load_data', methods=["POST"])
@@ -88,7 +90,7 @@ def delete_data():
 @app.route('/get_all_docs', methods=["GET"])
 def get_all_docs():
     """
-    Used in saveDocs() function to get all docs and later for the 
+    Used in saveDocs() function to get all docs and later for the
     object to be pushed in to the data list
     """
     info = {}
@@ -171,7 +173,7 @@ def save_doc():
     sequence = couch.get_sequence()
     seq_rev = sequence['_rev']
     data['data']['prepId'] = 'ReReco-' + data['data']['procStr'] + "-000" + str(sequence['sequenceNo'])
-    sequence['sequenceNo'] = int(sequence['sequenceNo']) + 1 
+    sequence['sequenceNo'] = int(sequence['sequenceNo']) + 1
     seq_data = couch.update_sequence(json.dumps(sequence), seq_rev)
     doc_data = couch.put_file(json.dumps(data))
     return json.dumps(doc_data)
@@ -187,6 +189,9 @@ def get_test_bash(__release, _id, __scram):
     comm += "mkdir %s\n" %WORKDIR
     comm += "cd %s\n" %WORKDIR
     comm += "export SCRAM_ARCH=%s\n" %(__scram)
+    comm += "export PATH=$PATH:/afs/cern.ch/cms/common"
+    comm += "export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW"
+    comm += "export CMS_PATH=/afs/cern.ch/cms"
     comm += "source /afs/cern.ch/cms/cmsset_default.sh\n"
     comm += "scram project %s\n" % (__release)
     comm += "cd %s/src\n" % (__release)
@@ -210,6 +215,9 @@ def get_submit_bash(__release, _id, __scram):
     comm += "mkdir %s\n" %WORKDIR
     comm += "cd %s\n" %WORKDIR
     comm += "export SCRAM_ARCH=%s\n" %(__scram)
+    comm += "export PATH=$PATH:/afs/cern.ch/cms/common"
+    comm += "export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW"
+    comm += "export CMS_PATH=/afs/cern.ch/cms"
     comm += "source /afs/cern.ch/cms/cmsset_default.sh\n"
     comm += "scram project %s\n" % (__release)
     comm += "cd %s/src\n" % (__release)
@@ -237,7 +245,7 @@ def get_submit_bash(__release, _id, __scram):
     comm += "wmcontrol.py --wmtest --req_file=master.conf\n"
     #--------------------------------------------------
     return comm
-     
+
 @app.route('/das_driver_all', methods=["GET","POST"])
 def das_driver_all():
     """
@@ -246,18 +254,18 @@ def das_driver_all():
     """
     def check_ds():
         """
-        Local scope method which loops through the result of das_client queries, 
+        Local scope method which loops through the result of das_client queries,
         exits on first found result, doesn't bother too much
         """
-        proc = subprocess.call("eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 0 --query 'site dataset="+key+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log_file,stderr=err_file,shell=True)
+        proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 0 --query 'site dataset="+key+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log_file,stderr=err_file,shell=True)
         log_file.seek(0)
         err_file.seek(0)
         text = log_file.read()
         data = json.loads(text)
         for item in data['data']:
             for site in item['site']:
-                if 'dataset_fraction' in site and site['kind']=="Disk":
-                    proc = subprocess.call("eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 10 --query 'file dataset="+key+" site="+site['name']+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log2_file, stderr=err2_file, shell=True)
+                if 'dataset_fraction' in site and site['kind'] == "Disk":
+                    proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 10 --query 'file dataset="+key+" site="+site['name']+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log2_file, stderr=err2_file, shell=True)
                     log2_file.seek(0)
                     err2_file.seek(0)
                     text2 = log2_file.read()
@@ -266,24 +274,24 @@ def das_driver_all():
                         for root in item2['file']:
                             return root['name']
         return ("No")
-            
+
     data = json.loads(request.get_data())
     __release = data['CMSSW']
     _id = data['_id']
     _rev = couch.get_file(_id)['_rev']
     doc = json.dumps(data['doc'])
     req = couch.get_file(_id)['data']['req']
-    os.chdir(WORK_DIR + "/Test_Folder/"+__release +"/src")
+    os.chdir(WORK_DIR + "/Test_Folder/" + __release + "/src")
     i = 0
     fileNames = {}
     for key in req.keys():
         fileNames[key] = {}
-        log_file = file('dasTest_out'+str(i)+'.txt','w+')
-        err_file = file('dasTest_err'+str(i)+'.txt','w+')
-        log2_file = file('dasTest_2out'+str(i)+'.txt','w+')
-        err2_file = file('dasTest_2err'+str(i)+'.txt','w+')
+        log_file = file('dasTest_out' + str(i) + '.txt','w+')
+        err_file = file('dasTest_err' + str(i) + '.txt','w+')
+        log2_file = file('dasTest_2out' +str(i) + '.txt','w+')
+        err2_file = file('dasTest_2err' + str(i) + '.txt','w+')
         fileNames[key]['file'] = check_ds()
-        i+=1
+        i += 1
         log_file.close()
         err_file.close()
         log2_file.close()
@@ -291,29 +299,29 @@ def das_driver_all():
     return json.dumps(fileNames)
 
 @app.route('/das_driver_single', methods=['GET','POST'])
-def das_driver_single():    
+def das_driver_single():
     """
     Same as above, just does it with single dataset, could refactor to use the same function, but maybe laterz
     """
     data = json.loads(request.get_data())
     dsName = data['_id']
     __release = data['CMSSW']
-    os.chdir(WORK_DIR + "/Test_Folder/"+__release +"/src")
+    os.chdir(WORK_DIR + "/Test_Folder/" + __release + "/src")
     fileNames = {}
     fileNames[dsName] = {}
     log_file = file('dasTest_outSingle.txt','w+')
     err_file = file('dasTest_errSingle.txt','w+')
     log2_file = file('dasTest_2outSingle.txt','w+')
     err2_file = file('dasTest_2errSingle.txt','w+')
-    proc = subprocess.call("eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 0 --query 'site dataset="+dsName+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log_file,stderr=err_file,shell=True)
+    proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat " + cred + " | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY=" + CONFIG.USER_PROXY + "; das_client.py  --limit 0 --query 'site dataset=" + dsName + "' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json", stdout=log_file, stderr=err_file, shell=True)
     log_file.seek(0)
     err_file.seek(0)
     text = log_file.read()
     data = json.loads(text)
     for item in data['data']:
         for site in item['site']:
-            if 'dataset_fraction' in site and site['kind']=="Disk":
-                proc = subprocess.call("eval `scramv1 runtime -sh`; cat "+cred+" | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY="+CONFIG.USER_PROXY+"; das_client.py  --limit 10 --query 'file dataset="+dsName+" site="+site['name']+"' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json",stdout=log2_file, stderr=err2_file, shell=True)
+            if 'dataset_fraction' in site and site['kind'] == "Disk":
+                proc = subprocess.call("source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh`; cat " + cred + " | voms-proxy-init -voms cms -pwstdin > dasTest_voms.txt;export X509_USER_PROXY=" + CONFIG.USER_PROXY + "; das_client.py  --limit 10 --query 'file dataset=" + dsName + " site=" + site['name'] + "' --key=$X509_USER_PROXY --cert=$X509_USER_PROXY --format=json", stdout=log2_file, stderr=err2_file, shell=True)
                 log2_file.seek(0)
                 err2_file.seek(0)
                 text2 = log2_file.read()
@@ -327,7 +335,7 @@ def das_driver_single():
     log2_file.close()
     err2_file.close()
     return "No"
-       
+
 @app.route('/test_campaign', methods=["GET","POST"])
 def test_campaign():
     """
@@ -355,7 +363,7 @@ def test_campaign():
     log_file = file('logTest.txt','w')
     err_file = file('log2Test.txt','w')
     proc = subprocess.Popen(['bash', 'tmp_test.sh'],
-                        stdout=log_file,stderr=err_file,close_fds=True)			
+                        stdout=log_file, stderr=err_file, close_fds=True)
     log_file.close()
     err_file.close()
     #_ret_code = proc.wait()
@@ -364,28 +372,28 @@ def test_campaign():
     os.chdir("Test_Folder" + '/' + __release + '/' + "src/")
     cfgFile = open("master.conf","r")
     i = 0   #loop needed to cycle through all the datasets and differ gathered information based on the dataset name
-    dynamicLogger={}    
+    dynamicLogger = {}
     for line in cfgFile:
         if line.startswith("cfg_path="):
 
             arg = line[9:]
             dynamicLogger[req.keys()[i]] = {}
-            log_file = file(str(i)+ "log.txt", "w+")
-            err_file = file(str(i)+ "errLog.txt", "w+")
+            log_file = file(str(i) + "log.txt", "w+")
+            err_file = file(str(i) + "errLog.txt", "w+")
 
-            proc = subprocess.call(('eval `scram runtime -sh` && cmsRun -n 10 %s') %(arg),stdout=log_file,stderr=err_file, shell=True, close_fds=True)
+            proc = subprocess.call(('eval `scram runtime -sh` && cmsRun -n 10 %s') %(arg), stdout=log_file, stderr=err_file, shell=True, close_fds=True)
 
             log_file.seek(0)
             err_file.seek(0)
-            dynamicLogger[req.keys()[i]]['stderr']= err_file.read() 
-            dynamicLogger[req.keys()[i]]['stdout']= log_file.read()
+            dynamicLogger[req.keys()[i]]['stderr'] = err_file.read()
+            dynamicLogger[req.keys()[i]]['stdout'] = log_file.read()
 
             log_file.close()
             err_file.close()
 
             if str(dynamicLogger[req.keys()[i]]['stderr']).find("Begin fatal exception"):
-                dynamicLogger[req.keys()[i]]['flag']="Fatality"    #subzero ftw
-            i+=1
+                dynamicLogger[req.keys()[i]]['flag'] = "Fatality"    #subzero ftw
+            i += 1
     cfgFile.close()
 
 #-----------------Uploading log file-------------------------
@@ -419,7 +427,7 @@ def submit_campaign():
     log_file = file('log.txt','w')
     err_file = file('log2.txt','w')
     proc = subprocess.Popen(['bash', 'tmp_execute.sh'],
-                        stdout=log_file,stderr=err_file,close_fds=True)
+                        stdout=log_file, stderr=err_file, close_fds=True)
     __ret_code = proc.wait()
     log_file.close()
     err_file.close()
