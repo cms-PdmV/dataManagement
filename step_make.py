@@ -29,6 +29,7 @@ class MasterConfMaker:
         __release = self.data['data']['CMSSW']
         drive = self.data['drive']
         check = self.data['check']
+        prep_id = self.data['data']['prepId']
         lumi_list = self.data['lumi']
         era = self.data['data']['era']
         del drive['Default']
@@ -81,7 +82,7 @@ class MasterConfMaker:
             prio=int(self.data['data']['req'][ds]['prio'])
             #ds = ds.split("/")[1]
             #dataset='/%s/Run%s-v1/RAW' % (ds, era)
-
+            master.write('[%s]\n' % (prep_id))
             master.write('[%s%s%sPrio%d]\n' % (__id, era, ds.split("/")[1], prio))
             master.write('campaign=Run%s\n' % (era))
             master.write('priority=%d\n' % (prio))

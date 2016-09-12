@@ -3,6 +3,7 @@ import os
 import urllib2
 
 db_url = 'http://moni.cern.ch:5984/campaigns/'
+settings_url = 'http://moni.cern.ch:5984/settings/'
 
 class CouchDBInterface:
     """
@@ -14,6 +15,7 @@ class CouchDBInterface:
         init a class
         """
         self.url_address = db_url
+        self.settings_address = settings_url
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
     def put_file(self, stringToPut):
@@ -26,6 +28,28 @@ class CouchDBInterface:
         url = self.opener.open(request)
         return json.loads(url.read())
 
+    def get_sequence(self):
+        """
+        Gets the number to add to campaigns prepId from settings/sequenceGen
+        """
+        request = urllib2.Request(self.settings_address + "sequenceGen")
+        request.add_header('Content-Type', 'text/plain')
+        request.get_methods = lambda: 'GET'
+        try:
+            url = self.opener.open(request)
+            return json.loads(url.read())
+        except:
+            print "Failed"
+    
+    def update_sequence(self, stringToPut, rev):
+        """
+        updates the settings/sequenceGen. used mostly after creating a campaign and after incrementation
+        """
+        request = urllib2.Request(self.settings_address + "sequenceGen" + "?rev=" + rev, data=stringToPut)
+        request.add_header('Content-Type', 'text/plain')
+        request.get_method = lambda: 'PUT'
+        url = self.opener.open(request)
+        return json.loads(url.read())
 
     def get_file(self, fileID):
         """
