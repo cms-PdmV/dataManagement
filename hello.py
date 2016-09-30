@@ -27,6 +27,13 @@ cred = CONFIG.PRIV_CRED
 # WORK_DIR = '/home/dataManagement/stuff'
 # couch = CouchDBInterface()
 # cred = '/afs/cern.ch/user/j/jsiderav/private/PdmVService.txt'
+@app.route('/test', methods = ['GET'])
+def test():
+    """Print available functions."""
+    import time
+    time.sleep(2000)
+    return "boogabooga"
+
 @app.route("/", methods=["GET", "POST"])
 def hello():
     """
@@ -189,9 +196,9 @@ def get_test_bash(__release, _id, __scram):
     comm += "mkdir %s\n" %WORKDIR
     comm += "cd %s\n" %WORKDIR
     comm += "export SCRAM_ARCH=%s\n" %(__scram)
-    comm += "export PATH=$PATH:/afs/cern.ch/cms/common"
+#    comm += "export PATH=$PATH:/afs/cern.ch/cms/common"
     comm += "export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW"
-    comm += "export CMS_PATH=/afs/cern.ch/cms"
+    comm += "export CMS_PATH=/afs/cern.ch/cms\n"
     comm += "source /afs/cern.ch/cms/cmsset_default.sh\n"
     comm += "scram project %s\n" % (__release)
     comm += "cd %s/src\n" % (__release)
@@ -214,11 +221,13 @@ def get_submit_bash(__release, _id, __scram):
     comm = "#!/bin/bash\n"
     comm += "mkdir %s\n" %WORKDIR
     comm += "cd %s\n" %WORKDIR
+#    comm += "source /afs/cern.ch/cms/cmsset_default.sh; eval `scram runtime -sh`\n"
     comm += "export SCRAM_ARCH=%s\n" %(__scram)
-    comm += "export PATH=$PATH:/afs/cern.ch/cms/common"
+#    comm += "export PATH=$PATH:/afs/cern.ch/cms/common"
     comm += "export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW"
-    comm += "export CMS_PATH=/afs/cern.ch/cms"
+    comm += "export CMS_PATH=/afs/cern.ch/cms\n"
     comm += "source /afs/cern.ch/cms/cmsset_default.sh\n"
+    comm += "eval `scram runtime -sh`\n"
     comm += "scram project %s\n" % (__release)
     comm += "cd %s/src\n" % (__release)
     comm += "cmsenv\n"
@@ -235,14 +244,14 @@ def get_submit_bash(__release, _id, __scram):
     comm += "python step_make.py --in=%s\n" % (_id)
     #-------------For wmcontrol.py---------------------
     comm += "source %s\n" %CONFIG.WMCLIENT
-    comm += "export PATH=/afs/cern.ch/cms/PPD/PdmV/tools/wmcontrol_testful:${PATH}\n"
+    comm += "export PATH=/afs/cern.ch/cms/PPD/PdmV/tools/wmcontrol:${PATH}\n"
     comm += "cat %s | voms-proxy-init -voms cms -pwstdin\n" %(cred)
     comm += "echo 'executing scram runtime'\n"
     comm += "eval `scram runtime -sh`\n"
     comm += "echo 'executing export'\n"
     comm += "export X509_USER_PROXY="+CONFIG.USER_PROXY+"\n"
     comm += "echo 'executing step wmcontrol.py'\n"
-    comm += "wmcontrol.py --wmtest --req_file=master.conf\n"
+    comm += "wmcontrol.py --req_file=master.conf\n"
     #--------------------------------------------------
     return comm
 
@@ -347,7 +356,7 @@ def test_campaign():
     data = json.loads(request.get_data())
     __release = data['CMSSW']
     _id = data['_id']
-    _rev = data['_rev']
+#    _rev = data['_rev']
     req = data['req']
     doc = json.dumps(data['doc'])
     __scram = get_scram(__release)
@@ -381,7 +390,7 @@ def test_campaign():
             log_file = file(str(i) + "log.txt", "w+")
             err_file = file(str(i) + "errLog.txt", "w+")
 
-            proc = subprocess.call(('eval `scram runtime -sh` && cmsRun -n 10 %s') %(arg), stdout=log_file, stderr=err_file, shell=True, close_fds=True)
+            proc = subprocess.call(('source /afs/cern.ch/cms/cmsset_default.sh; eval `scramv1 runtime -sh` && cmsRun -n 10 %s') %(arg), stdout=log_file, stderr=err_file, shell=True, close_fds=True)
 
             log_file.seek(0)
             err_file.seek(0)
@@ -411,19 +420,21 @@ def submit_campaign():
 
     __release = data['CMSSW']
     _id = data['_id']
-    _rev = data['_rev']
+#    _rev = data['_rev']
     doc = json.dumps(data['doc'])
-
+    print "got data"
     __scram = get_scram(__release)
     if __scram == '':
         return "No scram"
-    couch.update_file(_id, doc, _rev)
+#    couch.update_file(_id, doc, _rev)
     #----------Creating & running bash file----------------------
     __curr_dir = os.getcwd()
     os.chdir(WORK_DIR)
+    print "starting writing bash script at " + os.getcwd()
     __exec_file = open("tmp_execute.sh", "w")
     __exec_file.write(get_submit_bash(__release, _id, __scram))
     __exec_file.close()
+    print "file done"
     log_file = file('log.txt','w')
     err_file = file('log2.txt','w')
     proc = subprocess.Popen(['bash', 'tmp_execute.sh'],

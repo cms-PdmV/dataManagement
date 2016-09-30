@@ -1033,7 +1033,7 @@ myApp.controller('myAppCtrl', function ($scope, $http, $location) {
               if (ds != 'Default'){
                 if ($scope.data['req'][ds]['action'][action] == undefined){
                   $scope.data['req'][ds]['action'][action] = {};
-                }
+		}
                 if ($scope.allOpt[ds][action] != undefined && $scope.allOpt[ds][action][field] != undefined){
                   $scope.data['req'][ds]['action'][action][field] = newValue[action][field];
                 }

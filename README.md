@@ -12,4 +12,8 @@
   <span><p><h5>submit_campaign</h5>Executes the submit button by updating the current campaign, creating/executing the script in get_submit_bash(). Logs of the process can be found in the WORK_DIR variable location and a log is also uploaded to the CouchDB together with the object</p> <br> </span> 
   <span><p><h5>/test_campaign</h5>Creates a bash script that will proceed with the config file generation and will run the cmsRun command without injecting it to request manager. Runs tests with all the datasets of the campaign and return jsons should be processed by the dataset name in controllers.js</p> <br> </span> 
   <span><p><h5>/update_file</h5>Gets the object from the browser and updates it in the CouchDB</p><br></span> 
+#<h4> TO-DO list </h4>
+Testing icon for three stages - not tested/suceeded/failed
+DB in a new instance, not in Monika's dB
+Config entry for Dev/Prod instances
 
